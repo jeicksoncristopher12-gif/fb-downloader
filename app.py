@@ -3,62 +3,64 @@ import yt_dlp
 
 app = Flask(__name__)
 
-# El HTML se guarda en una variable de Python
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB Video Downloader - Premium</title>
+    <title>All-in-One Downloader</title>
     <style>
-        :root { --fb-blue: #1877f2; --fb-green: #42b72a; --bg-dark: #141e30; }
+        :root { --fb-blue: #1877f2; --fb-green: #42b72a; --yt-red: #ff0000; }
         body { 
             font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh;
             display: flex; justify-content: center; align-items: center;
-            background: linear-gradient(-45deg, #1877f2, #2b32b2, #141e30, #243b55);
+            background: linear-gradient(-45deg, #141e30, #243b55, #000000);
             background-size: 400% 400%; animation: gradientBG 15s ease infinite;
             overflow: hidden;
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .card { 
-            background: rgba(255, 255, 255, 0.95); padding: 35px; border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); width: 380px; text-align: center;
-            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.3); z-index: 10;
+            background: rgba(255, 255, 255, 0.98); padding: 30px; border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); width: 360px; text-align: center;
+            z-index: 10;
         }
-        h1 { color: var(--fb-blue); font-size: 26px; margin-bottom: 25px; font-weight: 800; letter-spacing: -1px; }
-        input { width: 90%; padding: 14px; border: 2px solid #eee; border-radius: 12px; margin-bottom: 20px; outline: none; transition: 0.3s; font-size: 15px; }
-        input:focus { border-color: var(--fb-blue); }
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 16px; transition: all 0.3s ease; position: relative; overflow: hidden; }
-        .btn-primary { background: var(--fb-blue); color: white; box-shadow: 0 4px 15px rgba(24, 119, 242, 0.4); }
-        .btn-success { background: var(--fb-green); color: white; text-decoration: none; display: block; margin-top: 15px; animation: pulse 2s infinite; }
-        .btn-secondary { background: #e4e6eb; color: #050505; margin-top: 10px; font-size: 14px; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(66, 183, 42, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(66, 183, 42, 0); } 100% { box-shadow: 0 0 0 0 rgba(66, 183, 42, 0); } }
-        #result { display: none; animation: fadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
-        .thumb { width: 100%; border-radius: 12px; margin: 15px 0; border: 3px solid #eee; }
-        .loader { display: none; margin: 15px 0; color: var(--fb-blue); font-weight: bold; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        h1 { color: #333; font-size: 24px; margin-bottom: 5px; font-weight: 800; }
+        input { width: 90%; padding: 14px; border: 2px solid #eee; border-radius: 12px; margin-bottom: 20px; outline: none; font-size: 15px; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; margin-bottom: 10px; text-decoration: none; display: block; box-sizing: border-box; }
+        .btn-primary { background: #333; color: white; }
+        .btn-video { background: var(--fb-blue); color: white; animation: pulse 2s infinite; }
+        .btn-audio { background: #ff9800; color: white; }
+        .btn-secondary { background: #e4e6eb; color: #333; font-size: 13px; margin-top: 5px; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.5); } 70% { box-shadow: 0 0 0 10px rgba(24, 119, 242, 0); } 100% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0); } }
+        #result { display: none; }
+        .thumb { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+        .loader { display: none; margin: 15px 0; color: #333; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
         <div id="search-section">
-            <h1>FB Downloader</h1>
+            <h1>Downloader Pro</h1>
+            <p style="color: #666; font-size: 12px; margin-bottom: 20px;">YouTube, TikTok, FB & Música</p>
             <input type="text" id="videoUrl" placeholder="Pega el link aquí...">
-            <button class="btn btn-primary" id="btnProcess" onclick="processVideo()">Obtener Video</button>
-            <div class="loader" id="loader">🚀 Buscando video...</div>
+            <button class="btn btn-primary" id="btnProcess" onclick="processVideo()">Analizar Enlace</button>
+            <div class="loader" id="loader">⚡ Procesando...</div>
         </div>
         <div id="result">
             <img id="preview" class="thumb" src="">
-            <h3 id="title" style="font-size: 15px; margin: 10px 0; color: #333;"></h3>
-            <a id="downloadBtn" class="btn btn-success" href="" target="_blank">⬇️ Descargar Ahora</a>
-            <button class="btn btn-secondary" onclick="goBack()">← Descargar otro más</button>
+            <h3 id="title" style="font-size: 14px; margin-bottom: 15px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></h3>
+            
+            <a id="downloadVideo" class="btn btn-video" href="" target="_blank">🎬 Descargar Video</a>
+            <a id="downloadAudio" class="btn btn-audio" href="" target="_blank">🎵 Descargar Solo Audio</a>
+            
+            <button class="btn btn-secondary" onclick="goBack()">← Volver atrás</button>
         </div>
     </div>
     <script>
         async function processVideo() {
             const url = document.getElementById('videoUrl').value;
-            if(!url) return alert("Por favor, pega un link válido");
+            if(!url) return alert("Pega un link");
             document.getElementById('btnProcess').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             try {
@@ -68,21 +70,23 @@ HTML_TEMPLATE = """
                     body: JSON.stringify({ url: url })
                 });
                 const data = await response.json();
-                if(data.error) { alert("Error: " + data.error); resetUI(); }
+                document.getElementById('loader').style.display = 'none';
+                if(data.error) { alert("Error al procesar"); resetUI(); }
                 else {
                     document.getElementById('preview').src = data.thumbnail;
                     document.getElementById('title').innerText = data.title;
-                    document.getElementById('downloadBtn').href = data.url;
+                    document.getElementById('downloadVideo').href = data.video_url;
+                    document.getElementById('downloadAudio').href = data.audio_url;
                     document.getElementById('search-section').style.display = 'none';
                     document.getElementById('result').style.display = 'block';
                 }
-            } catch (e) { alert("Error de conexión."); resetUI(); }
+            } catch (e) { alert("Error fatal"); resetUI(); }
         }
         function goBack() {
             document.getElementById('videoUrl').value = "";
-            resetUI();
             document.getElementById('result').style.display = 'none';
             document.getElementById('search-section').style.display = 'block';
+            resetUI();
         }
         function resetUI() {
             document.getElementById('btnProcess').style.display = 'block';
@@ -101,22 +105,29 @@ def index():
 def download_video():
     data = request.json
     video_url = data.get('url')
-    if not video_url:
-        return jsonify({"error": "URL no proporcionada"}), 400
-
-    ydl_opts = {
-        'format': 'best',
-        'quiet': True,
-        'no_warnings': True,
-    }
+    if not video_url: return jsonify({"error": "No URL"}), 400
 
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # Buscamos por separado el mejor video y el mejor audio solo
+        with yt_dlp.YoutubeDL({'quiet': True, 'noplaylist': True}) as ydl:
             info = ydl.extract_info(video_url, download=False)
+            
+            # Formato de Video (con audio incluido)
+            video_link = info.get('url') 
+            
+            # Formato de Audio Solo (buscamos el mejor audio disponible)
+            formats = info.get('formats', [])
+            audio_link = video_link # Default por si no hay
+            for f in formats:
+                if f.get('vcodec') == 'none' and f.get('acodec') != 'none':
+                    audio_link = f.get('url')
+                    break
+
             return jsonify({
-                "title": info.get('title', 'Video de Facebook'),
-                "url": info.get('url'),
-                "thumbnail": info.get('thumbnail')
+                "title": info.get('title', 'Video'),
+                "thumbnail": info.get('thumbnail'),
+                "video_url": video_link,
+                "audio_url": audio_link
             })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
